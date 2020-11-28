@@ -1,0 +1,10 @@
+[package]
+name = "csgo-internal-dumper"
+version = "0.1.0"
+authors = ["ko1N <ko1N1337@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+memflow = { git = "https://github.com/memflow/memflow", branch = "next", features = ["inventory", "memmapfiles"] }
+log = { version = "0.4", default-features = false }
+simple_logger = "1.0"
