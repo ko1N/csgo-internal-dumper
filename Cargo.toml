@@ -5,6 +5,12 @@ authors = ["ko1N <ko1N1337@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-memflow = { git = "https://github.com/memflow/memflow", branch = "next", features = ["inventory", "memmapfiles"] }
+memflow = { git = "https://github.com/memflow/memflow", branch = "next" }
+memflow-win32 = { git = "https://github.com/memflow/memflow", branch = "next" }
+#memflow = { path = "../memflow/memflow" }
+#memflow-win32 = { path = "../memflow/memflow-win32" }
 log = { version = "0.4", default-features = false }
+clap = "2.33"
 simple_logger = "1.0"
+pelite = "0.9"
+dataview = "0.1"
