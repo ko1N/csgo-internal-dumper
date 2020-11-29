@@ -1,3 +1,6 @@
+pub mod collectors;
+pub use collectors::*;
+
 use std::collections::HashMap;
 
 use log::info;

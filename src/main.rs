@@ -4,9 +4,6 @@ use engine::*;
 mod mapper;
 use mapper::*;
 
-mod collectors;
-use collectors::*;
-
 use std::cell::RefCell;
 use std::rc::Rc;
 
