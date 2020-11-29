@@ -1,6 +1,8 @@
 use crate::engine::{InterfaceManager, RecvPropManager};
 use crate::mapper::*;
 
+use log::{debug, warn};
+
 use memflow::prelude::v1::*;
 
 use memflow_win32::error::Result; // TODO: custom error
@@ -39,10 +41,10 @@ impl<'a> FunctionCollector for RecvPropCollector<'a> {
                     .find(|m| proxyfn >= m.base() && proxyfn < m.base() + m.size())
                 {
                     Some(m) => {
-                        println!("{} found in module: {}", prop.path, m.name());
+                        debug!("{} found in module: {}", prop.path, m.name());
                     }
                     None => {
-                        println!("HOOK: {} not found in any module", prop.path);
+                        warn!("HOOK: {} not found in any module", prop.path);
                     }
                 }
             }

@@ -251,6 +251,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dataview",
+ "iced-x86",
  "log",
  "memflow",
  "memflow-win32",
@@ -415,6 +416,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5aca5565f760fb5b220e499d72710ed156fdb74e631659e99377d9ebfbd13ae8"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "iced-x86"
+version = "1.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "248ce8ff0784d2b15f3c3d8b01f529be0e18aa693a2ba7415df76857967c8fc3"
+dependencies = [
+ "lazy_static",
+ "rustc_version",
+ "static_assertions",
 ]
 
 [[package]]
@@ -896,6 +908,12 @@ checksum = "cf906c8b8fc3f6ecd1046e01da1d8ddec83e48c8b08b84dcc02b585a6bedf5a8"
 dependencies = [
  "version_check",
 ]
+
+[[package]]
+name = "static_assertions"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f3eb36b47e512f8f1c9e3d10c2c1965bc992bd9cdb024fa581e2194501c83d3"
 
 [[package]]
 name = "stdweb"

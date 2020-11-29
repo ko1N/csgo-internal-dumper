@@ -34,7 +34,7 @@ impl<'a, T: VirtualMemory> FunctionCollector for InterfaceCollector<'a, T> {
         // scan all vtables
         let mut funcs = Vec::new();
         for iface in interfaces.iter() {
-            if let Ok(mut fns) = scan_vtable(&mut self.process, iface) {
+            if let Ok(mut fns) = self.scan_vtable(iface) {
                 funcs.append(&mut fns);
             }
         }
@@ -43,66 +43,75 @@ impl<'a, T: VirtualMemory> FunctionCollector for InterfaceCollector<'a, T> {
     }
 }
 
-/// Scans the VTable of a Source Engine Interface for potential hooks
-fn scan_vtable<T: VirtualMemory>(
-    process: &mut Win32Process<T>,
-    iface: &Interface,
-) -> Result<Vec<Function>> {
-    let vtable = process.virt_mem.virt_read_addr32(iface.address.into())?;
-    if vtable.is_null() {
-        return Err(Error::Other("invalid vtable pointer"));
-    }
-    info!(
-        "scanning vtable of interface {}/{} at 0x{:x}",
-        iface.module_info.name, iface.name, vtable
-    );
-
-    let mut funcs = Vec::new();
-    let mut idx = 0;
-    'outer: loop {
-        let func = match process.virt_mem.virt_read_addr32(vtable + idx * 4) {
-            Ok(f) => f,
-            Err(_) => break 'outer, // break out at the first invalid func
-        };
-
-        if func.is_null() {
-            break; // break out at the first invalid func
+impl<'a, T: VirtualMemory> InterfaceCollector<'a, T> {
+    /// Scans the VTable of a Source Engine Interface for potential hooks
+    fn scan_vtable(&mut self, iface: &Interface) -> Result<Vec<Function>> {
+        let vtable = self
+            .process
+            .virt_mem
+            .virt_read_addr32(iface.address.into())?;
+        if vtable.is_null() {
+            return Err(Error::Other("invalid vtable pointer"));
         }
-
-        debug!(
-            "checking vtable func {} of interface {}/{} at 0x{:x}",
-            idx, iface.module_info.name, iface.name, vtable
+        info!(
+            "scanning vtable of interface {}/{} at 0x{:x}",
+            iface.module_info.name, iface.name, vtable
         );
 
-        let page_info = match process.virt_mem.virt_page_info(func) {
-            Ok(p) => p,
-            Err(_) => break 'outer, // break out at the first invalid func
-        };
+        let mut funcs = Vec::new();
+        let mut idx = 0;
+        'outer: loop {
+            let func = match self.process.virt_mem.virt_read_addr32(vtable + idx * 4) {
+                Ok(f) => f,
+                Err(_) => break 'outer, // break out at the first invalid func
+            };
 
-        // only allow valid pages
-        if page_info.page_type.contains(PageType::NOEXEC) {
-            break; // we hit a non executable page, end of vtable
-        }
+            if func.is_null() {
+                break; // break out at the first invalid func
+            }
 
-        // TODO: check if function falls in any regular valve module and break
-        // TODO: if module is not mapped, add it to the suspect list
-
-        if func < iface.module_info.base()
-            || func > iface.module_info.base() + iface.module_info.size()
-        {
-            println!(
-                "HOOKED: {} / {:x} {:x} {:x} / {:?}",
-                idx,
-                func,
-                iface.module_info.base(),
-                iface.module_info.base() + iface.module_info.size(),
-                page_info
+            debug!(
+                "checking vtable func {} of interface {}/{} at 0x{:x}",
+                idx, iface.module_info.name, iface.name, vtable
             );
-            funcs.push(Function::new(func));
+
+            let page_info = match self.process.virt_mem.virt_page_info(func) {
+                Ok(p) => p,
+                Err(_) => break 'outer, // break out at the first invalid func
+            };
+
+            // only allow valid pages
+            if page_info.page_type.contains(PageType::NOEXEC) {
+                break; // we hit a non executable page, end of vtable
+            }
+
+            // TODO: check if function falls in any regular valve module and break
+            // TODO: if module is not mapped, add it to the suspect list
+
+            let modules = self.interface_manager.modules();
+            match modules
+                .iter()
+                .find(|m| func >= m.base() && func < m.base() + m.size())
+            {
+                Some(m) => {
+                    debug!("{} found in module: {}", func, m.name());
+                }
+                None => {
+                    warn!(
+                        "HOOKED: {} / {:x} {:x} {:x} / {:?}",
+                        idx,
+                        func,
+                        iface.module_info.base(),
+                        iface.module_info.base() + iface.module_info.size(),
+                        page_info
+                    );
+                    funcs.push(Function::new(func));
+                }
+            }
+
+            idx += 1;
         }
 
-        idx += 1;
+        Ok(funcs)
     }
-
-    Ok(funcs)
 }

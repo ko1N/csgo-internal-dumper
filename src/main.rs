@@ -96,16 +96,13 @@ fn main() {
     // TODO: scan interfaces, recvprops, etc
     info!("scanning interfaces");
     let mut interfaces = InterfaceCollector::new(process.clone(), &interface_manager);
-    let functions = interfaces.collect().unwrap(); // TODO:
+    let mut functions = interfaces.collect().unwrap(); // TODO:
 
     info!("scanning recvprops");
     let mut recvprops = RecvPropCollector::new(&interface_manager, &recvprop_manager);
-    let functions = recvprops.collect().unwrap(); // TODO:
+    functions.append(&mut recvprops.collect().unwrap()); // TODO:
 
-    /*
     // feed the mapper with our potential functions
     let mut mapper = mapper::FunctionMapper::new(functions);
-    // TODO: mapper.map stuff
     mapper.map_out_code(&mut process);
-    */
 }
