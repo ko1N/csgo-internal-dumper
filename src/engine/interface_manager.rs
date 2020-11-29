@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use log::{debug, info, trace, warn};
 
 use dataview::Pod;
@@ -28,6 +30,7 @@ struct InterfaceReg {
 
 pub struct InterfaceManager {
     interfaces: Vec<Interface>,
+    interfaces_map: HashMap<String, Interface>,
 }
 
 impl InterfaceManager {
@@ -43,15 +46,33 @@ impl InterfaceManager {
             }
         }
 
-        Ok(Self { interfaces })
+        let interfaces_map = interfaces
+            .iter()
+            .map(|i| (i.name.clone(), i.clone()))
+            .collect();
+
+        Ok(Self {
+            interfaces,
+            interfaces_map,
+        })
     }
 
     pub fn interfaces<'a>(&'a self) -> &'a Vec<Interface> {
         &self.interfaces
     }
 
+    pub fn modules(&self) -> Vec<Win32ModuleInfo> {
+        let module_map = self
+            .interfaces
+            .iter()
+            .map(|i| (i.module_info.name().clone(), i.module_info.clone()))
+            .collect::<HashMap<String, Win32ModuleInfo>>();
+
+        module_map.into_iter().map(|(_, m)| m).collect::<Vec<_>>()
+    }
+
     pub fn get(&self, name: &str) -> Option<Interface> {
-        match self.interfaces.iter().find(|i| i.name == name) {
+        match self.interfaces_map.get(name) {
             Some(iface) => Some(iface.clone()),
             None => None,
         }

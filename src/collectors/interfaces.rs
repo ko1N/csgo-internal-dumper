@@ -17,7 +17,7 @@ pub struct InterfaceCollector<'a, T> {
     interface_manager: &'a InterfaceManager,
 }
 
-impl<'a, T: VirtualMemory> InterfaceCollector<'a, T> {
+impl<'a, T> InterfaceCollector<'a, T> {
     pub fn new(process: Win32Process<T>, interface_manager: &'a InterfaceManager) -> Self {
         Self {
             process,

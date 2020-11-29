@@ -89,15 +89,23 @@ fn main() {
     let interface_manager =
         InterfaceManager::new(&mut process).expect("unable to parse engine interfaces");
     info!("parsing recvprops");
-    //let recvprop_manager = RecvPropManager::new(&mut process).expect("unable to parse recv tables");
+    let recvprop_manager = RecvPropManager::new(&mut process, &interface_manager)
+        .expect("unable to parse recv tables");
 
     // TODO: scan interfaces, recvprops, etc
     info!("scanning interfaces");
     let mut interfaces = InterfaceCollector::new(process.clone(), &interface_manager);
     let functions = interfaces.collect().unwrap(); // TODO:
 
+    info!("scanning recvprops");
+    let mut recvprops =
+        RecvPropCollector::new(process.clone(), &interface_manager, &recvprop_manager);
+    let functions = recvprops.collect().unwrap(); // TODO:
+
+    /*
     // feed the mapper with our potential functions
     let mut mapper = mapper::FunctionMapper::new(functions);
     // TODO: mapper.map stuff
     mapper.map_out_code(&mut process);
+    */
 }
