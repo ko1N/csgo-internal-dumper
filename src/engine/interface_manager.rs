@@ -1,8 +1,8 @@
+use super::native::InterfaceReg;
+
 use std::collections::HashMap;
 
 use log::{debug, info, trace, warn};
-
-use dataview::Pod;
 
 use memflow::prelude::v1::*;
 use memflow_win32::error::{Error, Result};
@@ -18,14 +18,6 @@ pub struct Interface {
     pub module_info: Win32ModuleInfo,
     pub name: String,
     pub address: u32,
-}
-
-#[repr(C)]
-#[derive(Clone, Debug, Pod)]
-struct InterfaceReg {
-    create: u32,
-    name: u32,
-    next: u32,
 }
 
 pub struct InterfaceManager {

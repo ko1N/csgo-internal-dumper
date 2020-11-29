@@ -92,14 +92,14 @@ fn main() {
     let recvprop_manager = RecvPropManager::new(&mut process, &interface_manager)
         .expect("unable to parse recv tables");
 
+    // TODO: specify scanners via cmdline args and dynamically add them to the function mapper
     // TODO: scan interfaces, recvprops, etc
     info!("scanning interfaces");
     let mut interfaces = InterfaceCollector::new(process.clone(), &interface_manager);
     let functions = interfaces.collect().unwrap(); // TODO:
 
     info!("scanning recvprops");
-    let mut recvprops =
-        RecvPropCollector::new(process.clone(), &interface_manager, &recvprop_manager);
+    let mut recvprops = RecvPropCollector::new(&interface_manager, &recvprop_manager);
     let functions = recvprops.collect().unwrap(); // TODO:
 
     /*

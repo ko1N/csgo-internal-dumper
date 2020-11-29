@@ -2,32 +2,28 @@ use crate::engine::{InterfaceManager, RecvPropManager};
 use crate::mapper::*;
 
 use memflow::prelude::v1::*;
-use memflow_win32::prelude::v1::*;
 
-use memflow_win32::error::{Error, Result}; // TODO: custom error
+use memflow_win32::error::Result; // TODO: custom error
 
 /// Scans all RecvTables for Proxy Callbacks
-pub struct RecvPropCollector<'a, T> {
-    process: Win32Process<T>,
+pub struct RecvPropCollector<'a> {
     interface_manager: &'a InterfaceManager,
     recvprop_manager: &'a RecvPropManager,
 }
 
-impl<'a, T> RecvPropCollector<'a, T> {
+impl<'a> RecvPropCollector<'a> {
     pub fn new(
-        process: Win32Process<T>,
         interface_manager: &'a InterfaceManager,
         recvprop_manager: &'a RecvPropManager,
     ) -> Self {
         Self {
-            process,
             interface_manager,
             recvprop_manager,
         }
     }
 }
 
-impl<'a, T: VirtualMemory> FunctionCollector for RecvPropCollector<'a, T> {
+impl<'a> FunctionCollector for RecvPropCollector<'a> {
     fn collect(&mut self) -> Result<Vec<Function>> {
         let funcs = Vec::new();
 
