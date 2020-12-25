@@ -1,3 +1,5 @@
+# this project is still work-in-progress and might not fully function yet.
+
 # csgo internal dumper
 
 This project aims to be a small example on how to use memflow in a real-world application.

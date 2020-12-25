@@ -5,10 +5,10 @@ authors = ["ko1N <ko1N1337@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-#memflow = { git = "https://github.com/memflow/memflow", branch = "dev" }
-#memflow-win32 = { git = "https://github.com/memflow/memflow", branch = "dev" }
-memflow = { path = "../memflow/memflow" }
-memflow-win32 = { path = "../memflow/memflow-win32" }
+memflow = { git = "https://github.com/memflow/memflow", branch = "dev" }
+memflow-win32 = { git = "https://github.com/memflow/memflow", branch = "dev" }
+#memflow = { path = "../memflow/memflow" }
+#memflow-win32 = { path = "../memflow/memflow-win32" }
 log = { version = "0.4", default-features = false }
 clap = "2.33"
 simple_logger = "1.0"
