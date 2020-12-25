@@ -1,13 +1,14 @@
 use super::native::{ClientClass, RecvProp, RecvTable};
 use super::InterfaceManager;
+use crate::error::{Error, Result};
 
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::mem::size_of;
 
 use log::{debug, trace};
 
 use memflow::prelude::v1::*;
-use memflow_win32::error::{Error, Result};
 use memflow_win32::prelude::v1::*;
 
 #[derive(Clone, Debug)]
@@ -30,7 +31,7 @@ impl RecvPropManager {
         interface_manager: &InterfaceManager,
     ) -> Result<Self> {
         let client_ptr = interface_manager
-            .get_handle("VClient018")
+            .get_handle("client.dll", "VClient018")
             .ok_or_else(|| Error::Other("VClient018 could not be found"))?;
 
         let virt_mem = &mut process.virt_mem;
@@ -46,8 +47,7 @@ impl RecvPropManager {
         let classes_list_head_ptr = virt_mem.virt_read_addr32(classes_list_head_ptr_ref)?;
         debug!("classes_list_head_ptr={:x}", classes_list_head_ptr);
 
-        // TODO: parse and store all recvprops
-        let props = find_all_recvprops(process, classes_list_head_ptr)?;
+        let props = find_all_recvprops(process, classes_list_head_ptr.try_into()?)?;
         let props_map = props.iter().map(|p| (p.path.clone(), p.clone())).collect();
 
         Ok(Self { props, props_map })
@@ -67,22 +67,23 @@ impl RecvPropManager {
 
 pub fn find_all_recvprops<T: VirtualMemory>(
     process: &mut Win32Process<T>,
-    classes_list_head_ptr: Address,
+    classes_list_head_ptr: Pointer32<ClientClass>,
 ) -> Result<Vec<Prop>> {
     let mut props = Vec::new();
 
     let virt_mem = &mut process.virt_mem;
-    let mut client_class: ClientClass = virt_mem.virt_read(classes_list_head_ptr)?;
+
+    let mut client_class = classes_list_head_ptr.deref(virt_mem)?;
     loop {
-        let recv_table: RecvTable = virt_mem.virt_read(client_class.recv_table.into())?;
+        let recv_table = client_class.recv_table.deref(virt_mem)?;
         if let Ok(mut p) = find_props_in_datatable(virt_mem, &recv_table, String::new(), 0) {
             props.append(&mut p);
         }
 
-        if client_class.next == 0 {
+        if client_class.next.is_null() {
             break;
         }
-        virt_mem.virt_read_into(client_class.next.into(), &mut client_class)?;
+        client_class.next.deref_into(virt_mem, &mut client_class)?;
     }
 
     Ok(props)

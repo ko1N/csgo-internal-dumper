@@ -1,3 +1,5 @@
+mod error;
+
 mod engine;
 use engine::*;
 
@@ -88,9 +90,13 @@ fn main() {
     info!("parsing recvprops");
     let recvprop_manager = RecvPropManager::new(&mut process, &interface_manager)
         .expect("unable to parse recv tables");
+    info!("parsing convars");
+    let cvar_manager =
+        CVarManager::new(&mut process, &interface_manager).expect("unable to parse convars");
 
     // TODO: specify scanners via cmdline args and dynamically add them to the function mapper
     // TODO: scan interfaces, recvprops, etc
+    /*
     info!("scanning interfaces");
     let mut interfaces = InterfaceCollector::new(process.clone(), &interface_manager);
     let mut functions = interfaces.collect().unwrap(); // TODO:
@@ -99,7 +105,12 @@ fn main() {
     let mut recvprops = RecvPropCollector::new(&interface_manager, &recvprop_manager);
     functions.append(&mut recvprops.collect().unwrap()); // TODO:
 
+    //info!("scanning cvars");
+    //let mut recvprops = RecvPropCollector::new(&interface_manager, &recvprop_manager);
+    //functions.append(&mut recvprops.collect().unwrap()); // TODO:
+
     // feed the mapper with our potential functions
     let mut mapper = mapper::FunctionMapper::new(functions);
     mapper.map_out_code(&mut process);
+    */
 }

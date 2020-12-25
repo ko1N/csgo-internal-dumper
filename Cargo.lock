@@ -250,7 +250,6 @@ name = "csgo-internal-dumper"
 version = "0.1.0"
 dependencies = [
  "clap",
- "dataview",
  "iced-x86",
  "log",
  "memflow",
@@ -365,12 +364,6 @@ name = "fallible-iterator"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4443176a9f2c162692bd3d352d745ef9413eec5782a80d8fd6f8a1ac692a07f7"
-
-[[package]]
-name = "fixed-slice-vec"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba843232233976407945229b460d53582a1bde1cdbb44a945727ea0b8092a2c4"
 
 [[package]]
 name = "fnv"
@@ -521,15 +514,13 @@ checksum = "0ee1c47aaa256ecabcaea351eae4a9b01ef39ed810004e298d2511ed284b1525"
 
 [[package]]
 name = "memflow"
-version = "0.1.4"
-source = "git+https://github.com/memflow/memflow?branch=next#5881b3d058ab508f06b41e0fd9ca882d653859cd"
+version = "0.1.5"
 dependencies = [
  "bitflags",
  "bumpalo",
  "coarsetime",
  "dataview",
  "dirs 3.0.1",
- "fixed-slice-vec",
  "hashbrown",
  "itertools",
  "libloading",
@@ -540,13 +531,13 @@ dependencies = [
  "serde",
  "smallvec",
  "toml",
+ "vector-trees",
  "x86_64",
 ]
 
 [[package]]
 name = "memflow-derive"
-version = "0.1.4"
-source = "git+https://github.com/memflow/memflow?branch=next#5881b3d058ab508f06b41e0fd9ca882d653859cd"
+version = "0.1.5"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -556,10 +547,8 @@ dependencies = [
 
 [[package]]
 name = "memflow-win32"
-version = "0.1.4"
-source = "git+https://github.com/memflow/memflow?branch=next#5881b3d058ab508f06b41e0fd9ca882d653859cd"
+version = "0.1.5"
 dependencies = [
- "dataview",
  "dirs 2.0.2",
  "log",
  "memflow",
@@ -1156,6 +1145,14 @@ name = "vec_map"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
+
+[[package]]
+name = "vector-trees"
+version = "0.1.0"
+source = "git+https://github.com/h33p/vector-trees#fa7d37b07b0fe95d637ac62030053413f81b1b47"
+dependencies = [
+ "bumpalo",
+]
 
 [[package]]
 name = "version_check"

@@ -1,11 +1,10 @@
 use crate::engine::{InterfaceManager, RecvPropManager};
+use crate::error::{Error, Result};
 use crate::mapper::*;
 
 use log::{debug, warn};
 
 use memflow::prelude::v1::*;
-
-use memflow_win32::error::Result; // TODO: custom error
 
 /// Scans all RecvTables for Proxy Callbacks
 pub struct RecvPropCollector<'a> {

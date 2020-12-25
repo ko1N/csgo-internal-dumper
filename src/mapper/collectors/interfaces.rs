@@ -1,4 +1,5 @@
 use crate::engine::{Interface, InterfaceManager};
+use crate::error::{Error, Result};
 use crate::mapper::*;
 
 use std::cell::RefCell;
@@ -8,8 +9,6 @@ use log::{debug, info, trace, warn};
 
 use memflow::prelude::v1::*;
 use memflow_win32::prelude::v1::*;
-
-use memflow_win32::error::{Error, Result}; // TODO: custom error
 
 /// Scans all Source Engine Interfaces in the target process for potential VTable hooks
 pub struct InterfaceCollector<'a, T> {

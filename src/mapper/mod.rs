@@ -1,12 +1,13 @@
 pub mod collectors;
 pub use collectors::*;
 
+use crate::error::{Error, Result};
+
 use std::collections::HashMap;
 
 use log::info;
 
 use memflow::prelude::v1::*;
-use memflow_win32::error::Result;
 use memflow_win32::prelude::v1::*;
 
 use iced_x86::{
