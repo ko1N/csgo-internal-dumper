@@ -35,6 +35,14 @@ fn main() {
                 .default_value(""),
         )
         .arg(
+            Arg::with_name("collectors")
+                .long("collectors")
+                .short("col")
+                .takes_value(true)
+                .use_delimiter(true)
+                .required(true),
+        )
+        .arg(
             Arg::with_name("output")
                 .long("output")
                 .short("o")
@@ -55,6 +63,8 @@ fn main() {
         .with_level(level.to_level_filter())
         .init()
         .unwrap();
+
+    let collectors = matches.values_of("collectors").unwrap().collect::<Vec<_>>();
 
     // create inventory + connector
     let inventory = unsafe { ConnectorInventory::scan() };
@@ -96,21 +106,28 @@ fn main() {
 
     // TODO: specify scanners via cmdline args and dynamically add them to the function mapper
     // TODO: scan interfaces, recvprops, etc
-    /*
-    info!("scanning interfaces");
-    let mut interfaces = InterfaceCollector::new(process.clone(), &interface_manager);
-    let mut functions = interfaces.collect().unwrap(); // TODO:
+    let mut functions = Vec::new();
 
-    info!("scanning recvprops");
-    let mut recvprops = RecvPropCollector::new(&interface_manager, &recvprop_manager);
-    functions.append(&mut recvprops.collect().unwrap()); // TODO:
+    if collectors.iter().find(|&&c| c == "interfaces").is_some() {
+        info!("scanning interfaces");
+        let mut interfaces = InterfaceCollector::new(process.clone(), &interface_manager);
+        functions.append(&mut interfaces.collect().unwrap());
+    }
 
-    //info!("scanning cvars");
-    //let mut recvprops = RecvPropCollector::new(&interface_manager, &recvprop_manager);
-    //functions.append(&mut recvprops.collect().unwrap()); // TODO:
+    if collectors.iter().find(|&&c| c == "recvprops").is_some() {
+        info!("scanning recvprops");
+        let mut recvprops =
+            RecvPropCollector::new(process.clone(), &interface_manager, &recvprop_manager);
+        functions.append(&mut recvprops.collect().unwrap());
+    }
+
+    if collectors.iter().find(|&&c| c == "cvars").is_some() {
+        //info!("scanning cvars");
+        //let mut recvprops = RecvPropCollector::new(&interface_manager, &recvprop_manager);
+        //functions.append(&mut recvprops.collect().unwrap()); // TODO:
+    }
 
     // feed the mapper with our potential functions
     let mut mapper = mapper::FunctionMapper::new(functions);
     mapper.map_out_code(&mut process);
-    */
 }

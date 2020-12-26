@@ -51,6 +51,8 @@ impl FunctionMapper {
     /// Maps out all touched functions, code segments and x-refs
     pub fn map_out_code<T: VirtualMemory>(&mut self, process: &mut Win32Process<T>) {
         // TODO: remove clone()
+        info!("mapping out a total of {} functions", self.functions.len());
+
         for func in self.functions.clone().iter() {
             self.disasm_func(process, func.address, PAGE_SIZE);
         }

@@ -35,6 +35,11 @@ impl CVarManager {
             cvars_map: HashMap::new(),
         })
     }
+
+    // TODO: do not use address here
+    pub fn cvars<'a>(&'a self) -> &'a Vec<Address> {
+        &self.cvars
+    }
 }
 
 pub fn find_all_convars<T: VirtualMemory>(

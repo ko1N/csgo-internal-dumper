@@ -21,6 +21,7 @@ pub struct Interface {
 }
 
 pub struct InterfaceManager {
+    modules: Vec<Win32ModuleInfo>,
     interfaces: Vec<Interface>,
     interfaces_map: HashMap<String, Interface>,
 }
@@ -34,7 +35,7 @@ impl InterfaceManager {
             if let Ok(mut ifaces) = find_all_interfaces(process, module.to_owned()) {
                 interfaces.append(&mut ifaces);
             } else {
-                warn!("unable to parse interfaces for module '{}'", module.name());
+                info!("unable to parse interfaces for module '{}'", module.name());
             }
         }
 
@@ -43,26 +44,30 @@ impl InterfaceManager {
             .map(|i| (format!("{}_{}", i.module_info.name, i.name), i.clone()))
             .collect();
 
+        let module_map = interfaces
+            .iter()
+            .map(|i| (i.module_info.name().clone(), i.module_info.clone()))
+            .collect::<HashMap<String, Win32ModuleInfo>>();
+        let modules = module_map.into_iter().map(|(_, m)| m).collect::<Vec<_>>();
+
         Ok(Self {
+            modules,
             interfaces,
             interfaces_map,
         })
     }
 
+    /// Returns a list of all interfaces that have been found
     pub fn interfaces<'a>(&'a self) -> &'a Vec<Interface> {
         &self.interfaces
     }
 
-    pub fn modules(&self) -> Vec<Win32ModuleInfo> {
-        let module_map = self
-            .interfaces
-            .iter()
-            .map(|i| (i.module_info.name().clone(), i.module_info.clone()))
-            .collect::<HashMap<String, Win32ModuleInfo>>();
-
-        module_map.into_iter().map(|(_, m)| m).collect::<Vec<_>>()
+    /// Returns all modules that contained a `CreateInterface` export.
+    pub fn modules<'a>(&'a self) -> &'a Vec<Win32ModuleInfo> {
+        &self.modules
     }
 
+    /// Returns an Option containing interface if it is available.
     pub fn get(&self, module: &str, name: &str) -> Option<Interface> {
         match self.interfaces_map.get(&format!("{}_{}", module, name)) {
             Some(iface) => Some(iface.clone()),
@@ -70,6 +75,7 @@ impl InterfaceManager {
         }
     }
 
+    /// Returns an Option containing the address of an interface if it is available.
     pub fn get_handle(&self, module: &str, name: &str) -> Option<Address> {
         let iface = self.get(module, name)?;
         Some(iface.address.into())
@@ -147,7 +153,7 @@ fn find_all_interfaces<T: VirtualMemory>(
                 address,
             });
         } else {
-            warn!("instance pointer of interface {} is invalid", name);
+            info!("instance pointer of interface {} is invalid", name);
         }
 
         if reg.next.is_null() {
