@@ -5,7 +5,7 @@ use crate::error::{Error, Result};
 
 use std::collections::HashMap;
 
-use log::info;
+use log::{info, warn};
 
 use memflow::prelude::v1::*;
 use memflow_win32::prelude::v1::*;
@@ -51,11 +51,19 @@ impl FunctionMapper {
     /// Maps out all touched functions, code segments and x-refs
     pub fn map_out_code<T: VirtualMemory>(&mut self, process: &mut Win32Process<T>) {
         // TODO: remove clone()
-        info!("mapping out a total of {} functions", self.functions.len());
+        info!(
+            "mapping out an initial set of {} functions",
+            self.functions.len()
+        );
 
         for func in self.functions.clone().iter() {
             self.disasm_func(process, func.address, PAGE_SIZE);
         }
+
+        info!(
+            "total number of pages touched: {}",
+            self.touched_pages.len()
+        );
     }
 
     fn disasm_func<T: VirtualMemory>(
@@ -71,14 +79,14 @@ impl FunctionMapper {
         }
 
         info!(
-            "disassembling function at: 0x{:x} (base: 0x{:x}",
+            "disassembling function at addr=0x{:x} base=0x{:x}",
             func, func_base
         );
         self.touched_pages.insert(func_base.as_u32(), true);
 
         let func_buffer = process
             .virt_mem
-            .virt_read_raw(func, len)
+            .virt_read_raw(func_base, PAGE_SIZE)
             .data_part()
             .unwrap();
 
@@ -93,11 +101,17 @@ impl FunctionMapper {
             //let offsets = decoder.get_constant_offsets(&instr);
             //println!("{:016X} {}", instr.ip(), instr);
 
+            // TODO: filter out valid modules
+
             // TODO: handle the following instructions: mov, call, jmps, anything else that accesses registers
 
             if instr.is_call_near() || instr.is_call_far() {
-                //info!("following call: {:016X} {}", instr.ip(), instr);
-                //info!("following to -> {:x}", instr.memory_address64());
+                //trace!("following call: {:016X} {}", instr.ip(), instr);
+                self.disasm_func(process, instr.memory_address64().into(), PAGE_SIZE);
+            }
+
+            if instr.is_jmp_short() || instr.is_jmp_near() || instr.is_jmp_far() {
+                //trace!("following jmp: {:016X} {}", instr.ip(), instr);
                 self.disasm_func(process, instr.memory_address64().into(), PAGE_SIZE);
             }
         }
