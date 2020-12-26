@@ -4,6 +4,9 @@ pub use collectors::*;
 use crate::error::{Error, Result};
 
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::Write;
+use std::path::{Path, PathBuf};
 
 use log::{info, warn};
 
@@ -57,7 +60,7 @@ impl FunctionMapper {
         );
 
         for func in self.functions.clone().iter() {
-            self.disasm_func(process, func.address, PAGE_SIZE);
+            self.disasm_fn(process, func.address, PAGE_SIZE);
         }
 
         info!(
@@ -66,7 +69,36 @@ impl FunctionMapper {
         );
     }
 
-    fn disasm_func<T: VirtualMemory>(
+    /// Dumps all touched pages to the specified folder
+    pub fn dump_touched_pages<T: VirtualMemory, P: AsRef<Path>>(
+        &self,
+        process: &mut Win32Process<T>,
+        path: P,
+    ) -> Result<()> {
+        std::fs::create_dir_all(path.as_ref().clone())?;
+
+        for (&page, _) in self.touched_pages.iter() {
+            info!("reading page at page=0x{:x}", page);
+            if let Ok(page_buf) = process
+                .virt_mem
+                .virt_read_raw(page.into(), PAGE_SIZE)
+                .data_part()
+            {
+                if page_buf.iter().find(|&&b| b != 0).is_none() {
+                    // empty page (potentially paged out)
+                    continue;
+                }
+
+                let mut file =
+                    File::create(PathBuf::from(path.as_ref()).join(&format!("0x{:x}.dmp", page)))?;
+                file.write_all(&page_buf)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn disasm_fn<T: VirtualMemory>(
         &mut self,
         process: &mut Win32Process<T>,
         func: Address,
@@ -107,12 +139,12 @@ impl FunctionMapper {
 
             if instr.is_call_near() || instr.is_call_far() {
                 //trace!("following call: {:016X} {}", instr.ip(), instr);
-                self.disasm_func(process, instr.memory_address64().into(), PAGE_SIZE);
+                self.disasm_fn(process, instr.memory_address64().into(), PAGE_SIZE);
             }
 
             if instr.is_jmp_short() || instr.is_jmp_near() || instr.is_jmp_far() {
                 //trace!("following jmp: {:016X} {}", instr.ip(), instr);
-                self.disasm_func(process, instr.memory_address64().into(), PAGE_SIZE);
+                self.disasm_fn(process, instr.memory_address64().into(), PAGE_SIZE);
             }
         }
     }

@@ -26,6 +26,21 @@ Since we know the entry point of each function (from when they are called in the
 
 After everything has been mapped out we are dumping all those memory sections to disc.
 
+## Usage
+
+This tool uses the [memflow inventory system](https://docs.rs/memflow/0.1.5/memflow/connector/inventory/struct.ConnectorInventory.html). To use connectors you need to install them onto your system first. Make sure to read the [memflow readme](https://github.com/memflow/memflow/blob/master/README.md) for further details on connectors.
+
+To run the tool you can simply execute:
+```bash
+cargo run --release -- --connector qemu_procfs --args win10 --collectors interfaces,recvprops,convars -vv
+```
+
+Whereas `qemu_procfs` would be replaced with your connector and `win10` would be replaced with the arguments you want to feed to the connector.
+
+Additionally the `collectors` can be individually turned on or off via the command line switch.
+
+The `-v` switch changes the verbosity level of the output. For example `-vvv` will lead to a debug level output while `-vv` will just output warnings and errors.
+
 ## License
 
 Licensed under MIT License, see [LICENSE](LICENSE).

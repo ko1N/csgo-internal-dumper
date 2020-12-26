@@ -40,13 +40,14 @@ fn main() {
                 .short("col")
                 .takes_value(true)
                 .use_delimiter(true)
-                .required(true),
+                .default_value("interfaces,recvprops,convars"),
         )
         .arg(
             Arg::with_name("output")
                 .long("output")
                 .short("o")
-                .takes_value(true),
+                .takes_value(true)
+                .default_value("./dump"),
         )
         .get_matches();
 
@@ -121,7 +122,7 @@ fn main() {
         functions.append(&mut recvprops.collect().unwrap());
     }
 
-    if collectors.iter().find(|&&c| c == "cvars").is_some() {
+    if collectors.iter().find(|&&c| c == "convars").is_some() {
         //info!("scanning cvars");
         //let mut recvprops = RecvPropCollector::new(&interface_manager, &recvprop_manager);
         //functions.append(&mut recvprops.collect().unwrap()); // TODO:
@@ -130,4 +131,7 @@ fn main() {
     // feed the mapper with our potential functions
     let mut mapper = mapper::FunctionMapper::new(functions);
     mapper.map_out_code(&mut process);
+    mapper
+        .dump_touched_pages(&mut process, matches.value_of("output").unwrap())
+        .expect("unable to dump pages");
 }
